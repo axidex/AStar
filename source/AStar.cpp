@@ -3,24 +3,24 @@
 
 
 
-bool Vec2i::operator == (const Vec2i& coordinates_)
+inline bool Vec2i::operator == (const Vec2i& coordinates_)
 {
     return (x == coordinates_.x && y == coordinates_.y);
 }
 
-Vec2i operator + (const Vec2i& left_, const Vec2i& right_)
+inline Vec2i operator + (const Vec2i& left_, const Vec2i& right_)
 {
     return{ left_.x + right_.x, left_.y + right_.y };
 }
 
-Node::Node(Vec2i coordinates_, Node *parent_) // Конструктор по умолчанию для узла
+Node::Node(Vec2i coordinates_, Node* parent_) // Конструктор по умолчанию для узла
 {
     parent = parent_;
     coordinates = coordinates_;
     G = H = 0;
 }
 
-unsigned int Node::getScore() // -_- геттер
+inline unsigned int Node::getScore() // -_- геттер
 {
     return G + H;
 }
@@ -40,7 +40,7 @@ void Map::setWorldSize(Vec2i worldSize_) // сеттер для размеров
     worldSize = worldSize_;
 }
 
-void Map::setDiagonalMovement(bool enable_) // флаг для перемещения по диагонали
+inline void Map::setDiagonalMovement(bool enable_) // флаг для перемещения по диагонали
 {
     directions = (enable_ ? 8 : 4);
 }
@@ -48,7 +48,7 @@ void Map::setDiagonalMovement(bool enable_) // флаг для перемеще�
 void Map::setHeuristic(HeuristicFunction heuristic_) // сеттер для функции которая расчитывает расстояние
 {
     heuristic = std::bind(heuristic_, std::placeholders::_1, std::placeholders::_2); // сеттер для функтора который расчитывает расстояния до нужной точки
-                                                                                     // нужно 2 плейсхолдера тк функция принимает 2 значения
+                                                                                    // нужно 2 плейсхолдера тк функция принимает 2 значения
 }
 
 void Map::addCollision(Vec2i coordinates_) // добавить стену
@@ -71,7 +71,7 @@ void Map::clearCollisions() // удалить все стены
 
 CoordinateList Map::findPath(Vec2i source_, Vec2i target_)
 {
-    Node *current = nullptr;
+    Node* current = nullptr;
     std::vector<Node*> openSet, closedSet; // в открытом храним узлы в которых мы будем проводить вычесления
                                            // в закрытых - нет
     openSet.reserve(100);
@@ -115,8 +115,8 @@ CoordinateList Map::findPath(Vec2i source_, Vec2i target_)
             unsigned int totalCost = current->G + ((i < 4) ? 10 : 14); // если по диагоналям ходить можно следовательно добовлять будем sqrt(2) примерно 1.4
                                                                        // удобно это реализвать через тернарное выражение  
 
-            Node *successor = findNodeOnList(openSet, newCoordinates);
-            if (successor == nullptr) 
+            Node* successor = findNodeOnList(openSet, newCoordinates);
+            if (successor == nullptr)
             {
                 successor = new Node(newCoordinates, current);
                 successor->G = totalCost;
@@ -125,7 +125,7 @@ CoordinateList Map::findPath(Vec2i source_, Vec2i target_)
             }
             else if (totalCost < successor->G) // прокладываем путь указывая родителя
                                                /* пример для выкл диагоналей
-                                                            x      
+                                                            x
                                                             |
                                                             ∨
                                                        x ->|*|<- x
@@ -166,7 +166,7 @@ Node* Map::findNodeOnList(std::vector<Node*>& nodes_, Vec2i coordinates_) // Н�
 void Map::releaseNodes(std::vector<Node*>& nodes_) // чистим вектор узлов
 {
     for (auto it = nodes_.begin(); it != nodes_.end();) {
-        delete *it;
+        delete* it;
         it = nodes_.erase(it);
     }
 }
@@ -181,7 +181,7 @@ bool Map::detectCollision(Vec2i coordinates_) // проверка на стен�
     return false;
 }
 
-Vec2i Heuristic::getDelta(Vec2i source_, Vec2i target_) 
+inline Vec2i Heuristic::getDelta(Vec2i source_, Vec2i target_)
 {
     return{ abs(source_.x - target_.x),  abs(source_.y - target_.y) };
 }
@@ -195,7 +195,7 @@ unsigned int Heuristic::manhattan(Vec2i source_, Vec2i target_) // Манхет�
 
 unsigned int Heuristic::euclidean(Vec2i source_, Vec2i target_) // по диагонали расстояние как длина вектора
 {
-    auto delta = std::move(getDelta(source_, target_)); 
+    auto delta = std::move(getDelta(source_, target_));
     return static_cast<unsigned int>(10 * sqrt(pow(delta.x, 2) + pow(delta.y, 2)));
 }
 
